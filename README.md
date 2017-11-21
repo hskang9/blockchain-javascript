@@ -14,8 +14,9 @@ $ npm install
 ```
 
 3. Run the server:
-    * `$ node index.js` 
-    
+```
+$ node index.js 
+```    
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
