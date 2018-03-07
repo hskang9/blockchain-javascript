@@ -37,7 +37,7 @@ class Blockchain {
 
   validChain(chain) {
     /*
-    Determin if a given blockchain is valid
+    Determine if a given blockchain is valid
 
     : param chain: A blockchain
     : return: True if valid, False if not
