@@ -132,7 +132,7 @@ class Blockchain {
       'timestamp': Date.now(),
       'transactions': this.current_transactions,
       'proof': proof,
-      'previous_hash': previous_hash !== null ?  previous_hash : this.constructor.hash(this.chain.slice(-1)[0]), //Optional funtion argument
+      'previous_hash': previous_hash !== null ?  previous_hash : this.constructor.hash(this.chain.slice(-1)[0]), //Optional argument
     }
 
     this.current_transactions = []
