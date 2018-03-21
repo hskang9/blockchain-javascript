@@ -210,10 +210,10 @@ blockChain = new Blockchain()
 
 app.get('/mine', function mine(req, res) {
   // We run the proof of work algorithm to get the next proof...
-  lastBlock = blockChain.lastBlock()
-  lastNonce = blockChain.lastNonce
-  console.log(blockChain.chain)
-  proof = blockChain.proofOfWork(lastNonce)
+  lastBlock = blockChain.lastBlock();
+  lastNonce = lastBlock.nonce;
+  console.log(blockChain.chain);
+  proof = blockChain.proofOfWork(lastNonce);
 
   // We must receive a reward for finding the proof.
   // The sender is "0" to signify that this node has mined a new coin.
@@ -221,25 +221,25 @@ app.get('/mine', function mine(req, res) {
     sender="0",
     recipient=node_identifier,
     amount=1,
-  )
+  );
 
   // Forge the new Block by adding it to the chain
-  previousHash = blockChain.constructor.hash(lastBlock)
-  block = blockChain.newBlock(proof, previousHash)
-  console.log(lastBlock)
+  previousHash = blockChain.constructor.hash(lastBlock);
+  block = blockChain.newBlock(proof, previousHash);
+  console.log(lastBlock);
   response = {
     'message': "New Block Forged",
     'index': block['index'],
     'transactions': block['transactions'],
     'nonce': block['nonce'],
     'previous_hash': block['previous_hash'],
-  }
+  };
 
   res.status(200).json(response)
 })
 
 app.post('/transactions/new', function newTransaction(req, res) {
-  const values = req.body 
+  const values = req.body
   const keys = Object.keys(values)
   // Check that the required fields are in the POST'ed data
   const required = ['sender', 'recipient', 'amount', 'public_key']
