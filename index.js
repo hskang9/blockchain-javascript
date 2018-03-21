@@ -144,14 +144,17 @@ class Blockchain {
 
   newTransaction(sender, recipient, amount) {
     /* 
-    Creates a new transaction to go into the next mined Block
+    Use eliptic curve keys to verify user's transaction
+    source : https://github.com/indutny/elliptic
+    then creates a new transaction to go into the next mined Block
 
     : param sender: Address of the Sender
     : param recipient: Address of the Recipient
     : param amount: Amount
     : return: The index of the Block that will hold this transaction
     */
-
+    
+    // create a new transaction to go into the next mined Block
     this.current_transactions.push({
       'sender': sender,
       'recipient': recipient,
@@ -239,7 +242,7 @@ app.post('/transactions/new', function newTransaction(req, res) {
   const values = req.body 
   const keys = Object.keys(values)
   // Check that the required fields are in the POST'ed data
-  const required = ['sender', 'recipient', 'amount']
+  const required = ['sender', 'recipient', 'amount', 'public_key']
   if(keys.toString() !== required.toString()) {
     res.status(400).send("Missing values")
   }
