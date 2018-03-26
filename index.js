@@ -16,7 +16,7 @@ class Blockchain {
     this.chain = new Array()
     this.nodes = new Set()
     // Create the genesis block
-    this.newBlock({nounce: 100, previous_hash: '1'})
+    this.newBlock({nonce: 100, previous_hash: '1'})
     
   }
  
@@ -58,7 +58,7 @@ class Blockchain {
       }
       
       // Check that the Proof of Work is correct
-      if(!(this.constructor.validProof(lastBlock['nounce'], block['nounce']))){
+      if(!(this.constructor.validProof(lastBlock['nonce'], block['nonce']))){
         return false
       }
 
@@ -118,7 +118,7 @@ class Blockchain {
     return false;
   }
 
-  newBlock(nounce, previous_hash){
+  newBlock(nonce, previous_hash){
     /* 
     Create a new Block in the Blockchain
 
@@ -131,7 +131,7 @@ class Blockchain {
       'index': this.chain.length + 1,
       'timestamp': Date.now(),
       'transactions': this.current_transactions,
-      'nounce': nounce,
+      'nonce': nonce,
       'previous_hash': previous_hash !== null ?  previous_hash : this.constructor.hash(this.chain.slice(-1)[0]), //Optional argument
     }
 
@@ -164,31 +164,31 @@ class Blockchain {
     return this.lastBlock()['index'] + 1
   }
 
-  proofOfWork(lastNounce) {
+  proofOfWork(lastNonce) {
     /*
     Simple Proof of Work Algorithm:
-    - Find a nounce p', proof such that hash(pp') contains leading 4 zeroes, where p is the previous p'
+    - Find a nonce p', proof such that hash(pp') contains leading 4 zeroes, where p is the previous p'
     - p is the previous proof, and p' is the new proof
     */
 
-    var nounce = 0
-    while(this.constructor.validProof(lastNounce, nounce) == false) {
-       nounce += 1
+    var nonce = 0
+    while(this.constructor.validProof(lastNonce, nonce) == false) {
+       nonce += 1
     }
 
-    return nounce
+    return nonce
   }
 
-  static validProof(lastNounce, nounce) {
+  static validProof(lastNonce, nonce) {
     /*
     Validates the Proof
 
-    : param lastNounce: Previous Nounce
-    : param nounce: Current Nounce
+    : param lastNonce: Previous Nonce
+    : param nonce: Current Nonce
     : return: True if correct, False if not.
     */
     
-    const guess = sha256(`${lastNounce}${nounce}`)
+    const guess = sha256(`${lastNonce}${nonce}`)
     return guess.slice(0,4) === "0000"
   }
 }
@@ -211,9 +211,9 @@ blockChain = new Blockchain()
 app.get('/mine', function mine(req, res) {
   // We run the proof of work algorithm to get the next proof...
   lastBlock = blockChain.lastBlock();
-  lastNounce = lastBlock.nounce;
+  lastNonce = lastBlock.nonce;
   console.log(blockChain.chain);
-  proof = blockChain.proofOfWork(lastNounce);
+  proof = blockChain.proofOfWork(lastNonce);
 
   // We must receive a reward for finding the proof.
   // The sender is "0" to signify that this node has mined a new coin.
@@ -231,7 +231,7 @@ app.get('/mine', function mine(req, res) {
     'message': "New Block Forged",
     'index': block['index'],
     'transactions': block['transactions'],
-    'nounce': block['nounce'],
+    'nonce': block['nonce'],
     'previous_hash': block['previous_hash'],
   };
 
