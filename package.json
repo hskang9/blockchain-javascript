@@ -23,6 +23,7 @@
   "homepage": "https://github.com/hskang9/blockchain#readme",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "elliptic": "^6.4.0",
     "express": "^4.16.2",
     "request": "^2.83.0",
     "sha256": "^0.2.0",

@@ -4,9 +4,9 @@ var app = express()
 var bodyParser = require('body-parser');  
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-var sha256 = require('sha256')
+const config = require('config');
 const requests = require('request')
-
+const Blockchain = require('./blockchain')
 
 // Blockchain class
 class Blockchain {
@@ -16,7 +16,15 @@ class Blockchain {
     this.chain = new Array()
     this.nodes = new Set()
     // Create the genesis block
-    this.newBlock({nonce: 100, previous_hash: '1'})
+    this.newBlock({nonce: 100,
+                   previous_hash: '1',
+                   transactions: [
+                      {sender:'0',
+                       recipient: '0',
+                       amount: config.INITIAL_BALANCE
+                      }
+                    ]
+                  });
     
   }
  
@@ -210,10 +218,10 @@ blockChain = new Blockchain()
 
 app.get('/mine', function mine(req, res) {
   // We run the proof of work algorithm to get the next proof...
-  lastBlock = blockChain.lastBlock();
-  lastNonce = lastBlock.nonce;
+  var lastBlock = blockChain.lastBlock();
+  var lastNonce = lastBlock.nonce;
   console.log(blockChain.chain);
-  proof = blockChain.proofOfWork(lastNonce);
+  var proof = blockChain.proofOfWork(lastNonce);
 
   // We must receive a reward for finding the proof.
   // The sender is "0" to signify that this node has mined a new coin.
