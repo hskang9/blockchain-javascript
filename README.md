@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/dvf/blockchain.svg?branch=master)](https://travis-ci.org/dvf/blockchain)
 
 Blockchain built in private / public in javascript.
+
 This was the source code for my javascript implementation on [Building a Blockchain](https://medium.com/p/117428612f46). 
+
 It is now advancing with additional functionalities I add in(private / public key, modulization, tutorials).
 
 
