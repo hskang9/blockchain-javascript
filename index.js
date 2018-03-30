@@ -4,205 +4,13 @@ var app = express()
 var bodyParser = require('body-parser');  
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-const config = require('config');
 const requests = require('request')
-const Blockchain = require('./blockchain')
 
 // Blockchain class
-class Blockchain {
-  
-  constructor() {
-    this.current_transactions = []
-    this.chain = new Array()
-    this.nodes = new Set()
-    // Create the genesis block
-    this.newBlock({nonce: 100,
-                   previous_hash: '1',
-                   transactions: [
-                      {sender:'0',
-                       recipient: '0',
-                       amount: config.INITIAL_BALANCE
-                      }
-                    ]
-                  });
-    
-  }
- 
-  lastBlock(){
-    return this.chain[this.chain.length-1]
-  }
+const Blockchain = require('blockchain')
 
-  registerNode(address) {
-    /*
-    Add a new node to the list of nodes
-    
-    :param address: Address of node. Eg. 'http://192.168.0.5:5000'
-    */
-
-    parsed_url = parse(address)
-    this.nodes.push(parsed_url.host)
-  }
-
-  validChain(chain) {
-    /*
-    Determine if a given blockchain is valid
-
-    : param chain: A blockchain
-    : return: True if valid, False if not
-    */
-    
-    var lastBlock = chain[0]
-    
-    var currentIndex = 1
-
-    while(currentIndex < chain.length) {
-      var block = chain[currentIndex]
-      console.log(`${lastBlock}`)
-      console.log(`${block}`)
-      console.log("\n------------\n")
-      // Check that the hash of the block is correct
-      if(block['previous_hash'] != this.hash(lastBlock)) {
-        return false
-      }
-      
-      // Check that the Proof of Work is correct
-      if(!(this.constructor.validProof(lastBlock['nonce'], block['nonce']))){
-        return false
-      }
-
-      lastBlock = block
-      currentIndex += 1
-    }
-    
-    return true
-  }
-
-  static hash(block){
-    /*
-    Creates a SHA-256 hash of a Block
-
-    : param block: Block
-    */
-
-    // We must make sure that the Object is Ordered, or we'll have inconsistent hashes
-    const blockString = JSON.stringify(block, Object.keys(block).sort())
-    return sha256(blockString)
-  }
-
-  resolveConflicts() {
-    /*
-    This is our consensus algorithm, it resolves conflicts
-    by replacing our chain with the longest one in the network.
-
-    : return: True if our chain was replaced, False if not
-    */
-
-    neighbours = this.nodes
-    newChain = null
-
-    // We're only looking for chains longer than ours
-    max_length = this.chain.length
-
-    // Grab and verify the chains from all the nodes in our network
-    neighbours.forEach(function(node) {
-      response = requests.get(`http://${node}/chain`)
-                         .on('response', function(res) {
-                          if(res.statusCode == 200){
-                            length = res.json()['length']
-                            chain = res.json()['chain']
-
-                            // Check if the length is longer and the chain is valid
-                            if(length > max_length && this.validChain(chain)) {
-                               max_length = length
-                               newChain = chain
-                            }
-                          }
-                 })
-    });
-
-    if(newChain){ this.chain = newChain; return true}
-
-
-    return false;
-  }
-
-  newBlock(nonce, previous_hash){
-    /* 
-    Create a new Block in the Blockchain
-
-    : param proof: The proof given by the Proof of Work algorithm
-    : param previous_hash: Hash of previous Block
-    : return: New Block
-    */
-
-    const block = {
-      'index': this.chain.length + 1,
-      'timestamp': Date.now(),
-      'transactions': this.current_transactions,
-      'nonce': nonce,
-      'previous_hash': previous_hash !== null ?  previous_hash : this.constructor.hash(this.chain.slice(-1)[0]), //Optional argument
-    }
-
-    this.current_transactions = []
-     
-    this.chain.push(block)
-    
-    return block
-  }
-
-  newTransaction(sender, recipient, amount) {
-    /* 
-    Use eliptic curve keys to verify user's transaction
-    source : https://github.com/indutny/elliptic
-    then creates a new transaction to go into the next mined Block
-
-    : param sender: Address of the Sender
-    : param recipient: Address of the Recipient
-    : param amount: Amount
-    : return: The index of the Block that will hold this transaction
-    */
-    
-    // create a new transaction to go into the next mined Block
-    this.current_transactions.push({
-      'sender': sender,
-      'recipient': recipient,
-      'amount': amount,
-    })
-
-    return this.lastBlock()['index'] + 1
-  }
-
-  proofOfWork(lastNonce) {
-    /*
-    Simple Proof of Work Algorithm:
-    - Find a nonce p', proof such that hash(pp') contains leading 4 zeroes, where p is the previous p'
-    - p is the previous proof, and p' is the new proof
-    */
-
-    var nonce = 0
-    while(this.constructor.validProof(lastNonce, nonce) == false) {
-       nonce += 1
-    }
-
-    return nonce
-  }
-
-  static validProof(lastNonce, nonce) {
-    /*
-    Validates the Proof
-
-    : param lastNonce: Previous Nonce
-    : param nonce: Current Nonce
-    : return: True if correct, False if not.
-    */
-    
-    const guess = sha256(`${lastNonce}${nonce}`)
-    return guess.slice(0,4) === "0000"
-  }
-}
-
-
-
+// Regulator class
+const Regulator = require('regulator')
 
 
 // Generate a globally unique address for this node
@@ -215,6 +23,9 @@ function uuidv4() {
 node_identifier = uuidv4()
 
 blockChain = new Blockchain()
+blockChain.genesis()
+
+regulator = new Regulator()
 
 app.get('/mine', function mine(req, res) {
   // We run the proof of work algorithm to get the next proof...
@@ -246,15 +57,21 @@ app.get('/mine', function mine(req, res) {
   res.status(200).json(response)
 })
 
-app.post('/transactions/new', function newTransaction(req, res) {
-  const values = req.body
+app.post('/transactions/new', function newTransaction(req, res) { 
+  const values = req.body;
+  console.log(values);
   const keys = Object.keys(values)
   // Check that the required fields are in the POST'ed data
-  const required = ['sender', 'recipient', 'amount', 'public_key']
+  const required = ['sender', 'recipient', 'amount', 'signature', 'public_key']
+  console.log(values)
   if(keys.toString() !== required.toString()) {
     res.status(400).send("Missing values")
   }
 
+  // Validate Transaction
+  var signature = values.signature;
+  var publicKey = values.public_key;
+  regulator.authenticate(values, signature, publicKey);
   
   // Create a new Transaction
   const index = blockChain.newTransaction(values['sender'], values['recipient'], values['amount'])
