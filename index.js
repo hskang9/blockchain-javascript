@@ -68,16 +68,15 @@ app.post('/transactions/new', function newTransaction(req, res) {
     res.status(400).send("Missing values")
   }
 
-  /*
-  // Validate Transaction
-  var signature = values.signature
-  var publicKey = values.public_key
-  regulator.authenticate(values, signature, publicKey)
-  */
-
+  
   // Create a new Transaction
   const index = blockChain.newTransaction(values['sender'], values['recipient'], values['amount'])
 
+  // Broadcast Transaction to other nodes
+  var neighbours = this.nodes
+  neighbours.forEach(function (node) {
+    requests.post(`http://${node}/transactions/new`).form({'sender' : values['sender'], 'recipient' : values['recipient'], 'amount' : values['amount']})
+  })
   response = {'message': `Transaction will be added to Block ${index}`}
 
   res.status(201).json(response)
@@ -133,4 +132,4 @@ app.get('/nodes/resolve', function consensus(req, res){
   res.status(200).json(response)
 })
 
-app.listen(3000)
+app.listen(config.PORT)
