@@ -1,5 +1,7 @@
 var sha256 = require('sha256');
+const EC = require('elliptic').ec;
 const config = require('./config');
+const wallet = require('./wallet');
 
 
 // Blockchain class
@@ -82,6 +84,18 @@ class Blockchain {
       return true
     }
   
+    static hash(block){
+      /*
+      @description
+      Creates a SHA-256 hash of a Block
+  
+      : param block: Block
+      */
+  
+      // We must make sure that the Object is Ordered, or we'll have inconsistent hashes
+      const blockString = JSON.stringify(block, Object.keys(block).sort())
+      return sha256(blockString)
+    }
   
     resolveConflicts() {
       /*
@@ -92,20 +106,20 @@ class Blockchain {
       : return: True if our chain was replaced, False if not
       */
   
-      neighbours = this.nodes
-      newChain = null
+      var neighbours = this.nodes
+      var newChain = null
   
       // We're only looking for chains longer than ours
-      max_length = this.chain.length
+      var max_length = this.chain.length
   
       // Grab and verify the chains from all the nodes in our network
       neighbours.forEach(function(node) {
         response = requests.get(`http://${node}/chain`)
                            .on('response', function(res) {
                             if(res.statusCode == 200){
-                              length = res.json()['length']
-                              chain = res.json()['chain']
-  
+                              var length = res.json()['length']
+                              var chain = res.json()['chain']
+
                               // Check if the length is longer and the chain is valid
                               if(length > max_length && this.validChain(chain)) {
                                  max_length = length
@@ -125,7 +139,8 @@ class Blockchain {
       /* 
       @description
       Create a new Block in the Blockchain
-  
+      This is where the information is stored
+
       : param proof: The proof given by the Proof of Work algorithm
       : param previous_hash: Hash of previous Block
       : return: New Block
@@ -136,7 +151,8 @@ class Blockchain {
         'timestamp': Date.now(),
         'transactions': this.pool,
         'nonce': nonce,
-        'previous_hash': previous_hash !== undefined ?  previous_hash : 0, //Optional argument
+        'previous_hash': previous_hash !== undefined ?  previous_hash : 0, 
+        
       }
   
       this.pool = []
@@ -216,7 +232,7 @@ class Blockchain {
         var nonce = this.proofOfWork(lastNonce);
 
         // Forge the new Block by adding it to the chain
-        var previousHash = sha256(`${lastNonce}${nonce}`);
+        var previousHash = this.constructor.hash(lastBlock);
         var block = this.newBlock(nonce, previousHash);
         console.log(this.chain);
     }

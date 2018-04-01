@@ -1,24 +1,25 @@
 var express = require('express')
 var parse = require('url-parse')
+const sha256 = require('sha256');
 var app = express()
-var bodyParser = require('body-parser');  
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+var bodyParser = require('body-parser')  
+app.use(bodyParser.json()) // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 const requests = require('request')
 
 // Blockchain class
-const Blockchain = require('blockchain')
+const Blockchain = require('./blockchain')
 
 // Regulator class
-const Regulator = require('regulator')
+const Regulator = require('./regulator')
 
 
 // Generate a globally unique address for this node
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
 }
 node_identifier = uuidv4()
 
@@ -29,10 +30,9 @@ regulator = new Regulator()
 
 app.get('/mine', function mine(req, res) {
   // We run the proof of work algorithm to get the next proof...
-  var lastBlock = blockChain.lastBlock();
-  var lastNonce = lastBlock.nonce;
-  console.log(blockChain.chain);
-  var proof = blockChain.proofOfWork(lastNonce);
+  var lastBlock = blockChain.lastBlock()
+  var lastNonce = lastBlock.nonce
+  var nonce = blockChain.proofOfWork(lastNonce)
 
   // We must receive a reward for finding the proof.
   // The sender is "0" to signify that this node has mined a new coin.
@@ -40,39 +40,41 @@ app.get('/mine', function mine(req, res) {
     sender="0",
     recipient=node_identifier,
     amount=1,
-  );
+  )
 
   // Forge the new Block by adding it to the chain
-  previousHash = blockChain.constructor.hash(lastBlock);
-  block = blockChain.newBlock(proof, previousHash);
-  console.log(lastBlock);
+  previousHash = blockChain.constructor.hash(blockChain.lastBlock())
+
+  block = blockChain.newBlock(nonce, previousHash)
+  
   response = {
     'message': "New Block Forged",
     'index': block['index'],
     'transactions': block['transactions'],
     'nonce': block['nonce'],
     'previous_hash': block['previous_hash'],
-  };
+  }
 
   res.status(200).json(response)
 })
 
 app.post('/transactions/new', function newTransaction(req, res) { 
-  const values = req.body;
-  console.log(values);
+  const values = req.body
+  console.log(values)
   const keys = Object.keys(values)
   // Check that the required fields are in the POST'ed data
-  const required = ['sender', 'recipient', 'amount', 'signature', 'public_key']
-  console.log(values)
+  const required = ['sender', 'recipient', 'amount']
   if(keys.toString() !== required.toString()) {
     res.status(400).send("Missing values")
   }
 
+  /*
   // Validate Transaction
-  var signature = values.signature;
-  var publicKey = values.public_key;
-  regulator.authenticate(values, signature, publicKey);
-  
+  var signature = values.signature
+  var publicKey = values.public_key
+  regulator.authenticate(values, signature, publicKey)
+  */
+
   // Create a new Transaction
   const index = blockChain.newTransaction(values['sender'], values['recipient'], values['amount'])
 

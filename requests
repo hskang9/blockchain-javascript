@@ -1,0 +1,3 @@
+curl -H "Content-Type: application/json" -X POST -d '{"sender":"hello","recipient":"world", 'amount': 200}' http://localhost:3000/transactions/new
+
+curl localhost:3000/mine
