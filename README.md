@@ -10,12 +10,12 @@ This is the source code for my javascript implementation on [Building a Blockcha
 2. Install [npm](https://www.npmjs.com/) and packages in package.json file. 
 
 ```
-$ npm install
+$ npm install -g blockchain-javascript
 ```
 
-3. Run the server:
+3. Run the node for blockchain network:
 ```
-$ node index.js 
+$ blockchain-javascript
 ```    
 ## Contributing
 

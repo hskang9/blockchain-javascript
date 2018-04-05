@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 var express = require('express')
 var parse = require('url-parse')
 const sha256 = require('sha256');
@@ -132,4 +134,4 @@ app.get('/nodes/resolve', function consensus(req, res){
   res.status(200).json(response)
 })
 
-app.listen(config.PORT)
+app.listen(3000)
