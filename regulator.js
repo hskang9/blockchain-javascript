@@ -1,7 +1,9 @@
 const { INITIAL_BALANCE } = require('./config');
 const Wallet = require('./wallet');
-const EC = require('elliptic').ec;
+const { randomBytes } = require('crypto');
+const secp256k1 = require('secp256k1');
 const sha256 = require('sha256');
+const createKeccakHash = require('keccak')
 
 
 class Regulator {
@@ -13,34 +15,35 @@ class Regulator {
 
 
     generate() {
-        this.users += 1;
-        var ec = new EC('secp256k1');
-        var keys = ec.genKeyPair();
-        return new Wallet(INITIAL_BALANCE, keys, keys.getPublic().encode('hex'));
-    }
-
-    hash(data){
         /*
-        @description
-        Creates a SHA-256 hash of a data
-    
-        : param block: Block
-        */
-    
-        // We must make sure that the Object is Ordered, or we'll have inconsistent hashes
+        *@description
+        *Generate wallet
+        *Generating algorithm follows ethereum algorithm for signing transactions
+        *For more info, visit yellow paper of ethereum: https://ethereum.github.io/yellowpaper/paper.pdf 
+        */ 
+        this.users += 1;
+        
+        // Generate private key
+        let privKey
+        do {
+            privKey = randomBytes(32)
+        }while (!secp256k1.privateKeyVerify(privKey))
+        
+        // Derive public key in a compressed format
+        let pubKey = secp256k1.publicKeyCreate(privKey)
 
-        var blockString = JSON.stringify(data, Object.keys(data).sort());
-        var hash = sha256(blockString);
-        return hash;
+        let address = createKeccakHash('keccak256').update(pubKey).digest('hex').slice(95,)
+
+        return new Wallet(address, keys.getPrivate(), keys.getPublic(), 0);
     }
 
-    authenticate(data, signature, publicKey) {
+
+    identify(data, signature, publicKey) {
+        
         delete data.public_key;
         delete data.signature;
-        var ec = new EC('secp256k1');
-        var msgHash = this.hash(data);
-        var key = ec.keyFromPublic(publicKey, 'hex');
-        return key.verify(msgHash, signature);
+        
+        return secp256k1.verify(data, sigObj.signature, publicKey);
     }
 
     

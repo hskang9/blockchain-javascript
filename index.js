@@ -65,12 +65,16 @@ app.post('/transactions/new', function newTransaction(req, res) {
   console.log(values)
   const keys = Object.keys(values)
   // Check that the required fields are in the POST'ed data
-  const required = ['sender', 'recipient', 'amount']
+  const required = ['sender', 'recipient', 'amount', 'signature', 'public_key']
   if(keys.toString() !== required.toString()) {
     res.status(400).send("Missing values")
   }
-
   
+  // Validate transaction
+  if(!regulator.identify(values, values.signature, values.public_key)) {
+    res.status(400).send("Malicious transaction detected; Signature does not match your identity")
+  }
+
   // Create a new Transaction
   const index = blockChain.newTransaction(values['sender'], values['recipient'], values['amount'])
 
@@ -133,5 +137,15 @@ app.get('/nodes/resolve', function consensus(req, res){
 
   res.status(200).json(response)
 })
+
+
+app.get('/wallet/generate', function generate(req, res){
+  var wallet = regulator.generate()
+  response = Object.assign({},wallet,{'message' : 'New wallet has been generated!'});
+     
+  res.status(200).json(response)
+})
+
+
 
 app.listen(3000)

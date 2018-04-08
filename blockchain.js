@@ -89,6 +89,8 @@ class Blockchain {
     return true
   }
 
+
+
   static hash(block) {
     /*
       @description
@@ -172,6 +174,7 @@ class Blockchain {
     return block
   }
 
+
   newTransaction(sender, recipient, amount) {
     /* 
       @description
@@ -185,12 +188,8 @@ class Blockchain {
       : return: The index of the Block that will hold this transaction
       */
 
-    /*
-    // Validate Transaction
-    var signature = values.signature
-    var publicKey = values.public_key
-    regulator.authenticate(values, signature, publicKey)
-    */
+    
+    
 
 
     // create a new transaction to go into the next mined Block
