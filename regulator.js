@@ -32,7 +32,7 @@ class Regulator {
         // Derive public key in a compressed format
         let pubKey = secp256k1.publicKeyCreate(privKey)
 
-        let address = createKeccakHash('keccak256').update(pubKey).digest('hex').slice(95,)
+        let address = '0x' + createKeccakHash('keccak256').update(pubKey).digest('hex').slice(95,)
 
         return new Wallet(address, keys.getPrivate(), keys.getPublic(), 0);
     }
