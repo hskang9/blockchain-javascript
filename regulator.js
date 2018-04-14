@@ -14,7 +14,7 @@ class Regulator {
     }
 
 
-    generate() {
+    initWallet() {
         /*
         *@description
         *Generate wallet
@@ -32,9 +32,13 @@ class Regulator {
         // Derive public key in a compressed format
         let pubKey = secp256k1.publicKeyCreate(privKey)
 
+        // Get address from public key
         let address = '0x' + createKeccakHash('keccak256').update(pubKey).digest('hex').slice(95,)
+        
+        // initialize Balance
+        let balance = 0
 
-        return new Wallet(address, privKey, pubKey, 0);
+        return new Wallet(address, privKey, pubKey, balance);
     }
 
 
