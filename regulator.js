@@ -34,7 +34,7 @@ class Regulator {
 
         let address = '0x' + createKeccakHash('keccak256').update(pubKey).digest('hex').slice(95,)
 
-        return new Wallet(address, keys.getPrivate(), keys.getPublic(), 0);
+        return new Wallet(address, privKey, pubKey, 0);
     }
 
 
