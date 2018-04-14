@@ -42,7 +42,7 @@ class Regulator {
     }
 
 
-    identify(data, signature, publicKey) {
+    identify(data, sigObj, publicKey) {
         
         delete data.public_key;
         delete data.signature;
