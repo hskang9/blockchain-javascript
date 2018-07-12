@@ -1,14 +1,10 @@
 {
-  "name": "blockchain-javascript",
-  "version": "1.0.5",
-  "description": "javascript implementation of private / public blockchain",
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "javascript implementation of blockchain by Daniel van Flymen",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "build": "...",
-    "git-commit": "git add -A . && git commit -a -m 'gh-pages update'",
-    "git-push": "git push origin gh-pages --force && git checkout master",
-    "deploy": "npm run build && npm run git-commit && npm run git-push"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -21,10 +17,6 @@
   ],
   "author": "Hyungsuk Kang",
   "license": "MIT",
-  "preferGlobal": true,
-  "bin": {
-    "blockchain-javascript": "index.js"
-  },
   "bugs": {
     "url": "https://github.com/hskang9/blockchain/issues"
   },
@@ -36,11 +28,5 @@
     "request": "^2.83.0",
     "sha256": "^0.2.0",
     "url-parse": "^1.2.0"
-  },
-  "devDependencies": {
-    "jest": "^22.4.3"
-  },
-  "engines": {
-    "node": ">=4.2.4"
   }
 }
